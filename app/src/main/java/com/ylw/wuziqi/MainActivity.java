@@ -17,7 +17,6 @@ public class MainActivity extends AppCompatActivity {
     private SurfaceView surfaceView;
     private SurfaceHolder holder;
     private FiveBackground fiveBackground;
-    private int w, h;
     private boolean isDestroy = true;
 
     @Override
@@ -34,8 +33,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (isDestroy) return false;
                 fiveBackground.onTouch(motionEvent);
-                if (draw()) return false;
-                return true;
+                return !draw();
             }
         });
     }
@@ -55,8 +53,8 @@ public class MainActivity extends AppCompatActivity {
     private class HolderCallBack implements SurfaceHolder.Callback {
         @Override
         public void surfaceCreated(SurfaceHolder surfaceHolder) {
-            w = surfaceView.getWidth();
-            h = surfaceView.getHeight();
+            int w = surfaceView.getWidth();
+            int h = surfaceView.getHeight();
             fiveBackground = new FiveBackground(MainActivity.this);
             fiveBackground.setWidthHeight(w, h);
             isDestroy = false;

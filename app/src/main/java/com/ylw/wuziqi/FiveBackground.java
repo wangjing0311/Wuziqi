@@ -179,8 +179,10 @@ public class FiveBackground {
         }
     }
 
+    private boolean wait = true;
 
     private void addPoint() {
+        if (wait) return;
         if (isOver) return;
         float upX = curP.x - imgP.x - offX;
         float upY = curP.y - imgP.y - offY;
