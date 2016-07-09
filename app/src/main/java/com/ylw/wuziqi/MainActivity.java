@@ -1,31 +1,44 @@
 package com.ylw.wuziqi;
 
 import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-
-import java.util.Timer;
-import java.util.TimerTask;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-
     private SurfaceView surfaceView;
     private SurfaceHolder holder;
     private FiveBackground fiveBackground;
     private boolean isDestroy = true;
 
+
+    Controller controller;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "再来一局！", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
 
         surfaceView = (SurfaceView) findViewById(R.id.surface);
-        holder = surfaceView.getHolder();
+         holder = surfaceView.getHolder();
         holder.addCallback(new HolderCallBack());
 
         surfaceView.setOnTouchListener(new View.OnTouchListener() {
@@ -36,9 +49,16 @@ public class MainActivity extends AppCompatActivity {
                 return !draw();
             }
         });
+
+        controller = new Controller(this, fiveBackground);
     }
 
-    private boolean draw() {
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    public boolean draw() {
         Canvas canvas = holder.lockCanvas();
         if (canvas == null) return true;
 
@@ -49,6 +69,9 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    public void setMsg(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+    }
 
     private class HolderCallBack implements SurfaceHolder.Callback {
         @Override
@@ -56,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
             int w = surfaceView.getWidth();
             int h = surfaceView.getHeight();
             fiveBackground = new FiveBackground(MainActivity.this);
+            controller.setView(fiveBackground);
             fiveBackground.setWidthHeight(w, h);
             isDestroy = false;
             draw();
@@ -69,9 +93,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
             isDestroy = true;
-         }
+        }
     }
-
 
 
 }

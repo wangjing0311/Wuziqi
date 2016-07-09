@@ -9,11 +9,11 @@ import java.util.concurrent.Executors;
 public class TaskUtil {
  	private final static Handler h = new Handler(Looper.getMainLooper());
 
-	public void postMainTask(Runnable run) {
+	public static void postMainTask(Runnable run) {
 		h.post(run);
 	}
 
-	public void postMainTaskDelay(Runnable run, long delayMills) {
+	public static void postMainTaskDelay(Runnable run, long delayMills) {
 		h.postDelayed(run, delayMills);
 	}
 

@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Wuziqi</string>
+    <string name="app_name">五子棋</string>
+     <string name="title_activity_main">MainActivity</string>
+    <string name="restart">再来一局</string>
 </resources>

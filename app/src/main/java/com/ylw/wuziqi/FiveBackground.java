@@ -8,6 +8,8 @@ import android.graphics.EmbossMaskFilter;
 import android.graphics.MaskFilter;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -22,8 +24,8 @@ import static java.lang.Math.pow;
 public class FiveBackground {
 
     private static final String TAG = "FiveBackground";
-    private final Bitmap img;
-    private final Canvas bCanvas;
+    private Bitmap img;
+    private Canvas bCanvas;
     private final Context context;
     private Paint paint;
     private float w, h;
@@ -59,7 +61,7 @@ public class FiveBackground {
         paintText.setTextSize(120);
         paintText.setColor(0xffEE8888);
         paintText.setTextAlign(Paint.Align.CENTER);
-        paintText.setStyle(Paint.Style.STROKE);
+        paintText.setStyle(Paint.Style.FILL_AND_STROKE);
         rectText = new Rect(10, 10, 600, 260);
 
         mEmboss = new EmbossMaskFilter(new float[]{1, 1, 1},
@@ -183,7 +185,10 @@ public class FiveBackground {
 
     private void addPoint() {
         if (wait) return;
-        if (isOver) return;
+        if (isOver) {
+            restart();
+            return;
+        }
         float upX = curP.x - imgP.x - offX;
         float upY = curP.y - imgP.y - offY;
         int numX = Math.round(upX / gridWidth);
@@ -193,14 +198,18 @@ public class FiveBackground {
 
         if (qPan[numX][numY] != 0) return;
 
-        if (isRed) {
-            qPan[numX][numY] = 1;
-        } else {
-            qPan[numX][numY] = 2;
-        }
-        judgeWin(numX, numY, isRed);
-        isRed = !isRed;
+//        if (isRed) {
+//            qPan[numX][numY] = 1;
+//        } else {
+//            qPan[numX][numY] = 2;
+//        }
+//        judgeWin(numX, numY, isRed);
+//        isRed = !isRed;
 
+        qPan[numX][numY] = 1;
+        judgeWin(numX, numY, true);
+        wait = true;
+        Controller.send(numX, numY);
         Log.d(TAG, String.format("x = %d y = %d", numX, numY));
 
     }
@@ -211,16 +220,27 @@ public class FiveBackground {
         if (isRed) {
             if (check(numX, numY, 1)) {
                 resultStr = "红方胜!";
-                Toast.makeText(context, resultStr, Toast.LENGTH_LONG).show();
-                isOver = true;
+
+                gameOver();
             }
         } else {
             if (check(numX, numY, 2)) {
-                resultStr = "黑方胜!";
-                Toast.makeText(context, resultStr, Toast.LENGTH_LONG).show();
-                isOver = true;
+            resultStr = "黑方胜!";
+                gameOver();
             }
         }
+    }
+
+    private void gameOver() {
+        Toast.makeText(context, resultStr, Toast.LENGTH_LONG).show();
+        isOver = true;
+        Controller.gameOver();
+        for (int i = 0; i < hengNum; i++) {
+            for (int j = 0; j < shuNum; j++) {
+                qPan[i][j] = 0;
+            }
+        }
+
     }
 
 
@@ -273,5 +293,28 @@ public class FiveBackground {
             return this.qPan[i1][j1];
         }
         return 0;
+    }
+
+    public void start() {
+        wait = false;
+    }
+
+    public void step(int x, int y) {
+        qPan[x][y] = 2;
+        judgeWin(x, y, false);
+        isRed = true;
+        wait = false;
+
+    }
+
+    public void restart() {
+        wait = false;
+        isRed = true;
+        isOver = false;
+
+
+        img = Bitmap.createBitmap(canvasW, canvasH, Bitmap.Config.ARGB_8888);
+        bCanvas = new Canvas(img);
+        Controller.draw();
     }
 }
