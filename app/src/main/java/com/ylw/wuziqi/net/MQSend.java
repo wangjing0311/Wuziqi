@@ -31,7 +31,6 @@ public class MQSend {
     String sk = AliKey.sk(); // secretkey
     String pid = "PID_publish"; // producerId
 
-    String date = String.valueOf(new Date().getTime());
     String sign = null;
     String body = "hello ons http";
     String NEWLINE = "\n";
@@ -44,6 +43,7 @@ public class MQSend {
     }
 
     public void send(final String msg) {
+        if(msg!=null)return;// TODO: 2016/7/10 stop send msg
         executor.execute(new Runnable() {
             int time = 1000;
 
@@ -53,13 +53,13 @@ public class MQSend {
                     time = 1000;
                     sendM(msg);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.getMessage(), e);
                     time += 100;
                     time = (time > 30000) ? 30000 : time;
                     try {
                         Thread.sleep(time);
                     } catch (InterruptedException e1) {
-                        e1.printStackTrace();
+                        Log.e(TAG, e1.getMessage(), e1);
                     }
                     send(msg);
                 }
@@ -70,14 +70,15 @@ public class MQSend {
     public void sendM(String msg) throws Exception {
         // TODO Auto-generated method stub
         body = msg;
+        String date = String.valueOf(new Date().getTime());
         URL uri = new URL(url + "message?topic=" + topic + "&time=" + date + "&tag=http" + "&key=http");
         HttpURLConnection conn = (HttpURLConnection) uri.openConnection();
         conn.setRequestMethod("POST");
-        conn.setDoOutput(true);
+//        conn.setDoOutput(true);
         // conn.setUseCaches(false);
 
         signString = topic + NEWLINE + pid + NEWLINE + MD5.getInstance().getMD5String(body) + NEWLINE + date;//
-        Log.d(TAG, signString);
+//        Log.d(TAG, signString);
         sign = HmacSHA1Signature.computeSignature(sk, signString).trim();
 
         conn.setRequestProperty(SIGNATURE, sign);

@@ -53,11 +53,11 @@ public class MQRecive {
                 try {
                     startR();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.getMessage(), e);
                     try {
                         Thread.sleep(2000);
                     } catch (InterruptedException e1) {
-                        e1.printStackTrace();
+                        Log.e(TAG, e1.getMessage(), e1);
                     }
                     start();
                 }
@@ -72,18 +72,16 @@ public class MQRecive {
         String sk = AliKey.sk(); // secretkey
         String cid = "CID_recive";// consumerId
 
-        String date = String.valueOf(new Date().getTime());
         String sign = null;
         String NEWLINE = "\n";
         String signString;
-        Log.d(TAG,NEWLINE + NEWLINE);
+        Log.d(TAG, NEWLINE + NEWLINE);
 
         while (true) {
+            String date = String.valueOf(new Date().getTime());
             URL uri = new URL(url + "message/?topic=" + topic + "&time=" + date + "&num=" + 32);
             HttpURLConnection conn = (HttpURLConnection) uri.openConnection();
             conn.setRequestMethod("GET");
-
-//            conn.setDoOutput(true);
 
             signString = topic + NEWLINE + cid + NEWLINE + date;
 
@@ -95,17 +93,17 @@ public class MQRecive {
             long start = System.currentTimeMillis();
             conn.connect();
             String msg = getMsg(conn);
-            Log.d(TAG,"get cost:" + (System.currentTimeMillis() - start) / 1000 + "    "
-                    + conn.getResponseCode() + "    " + msg);
+//            Log.d(TAG, "get cost:" + (System.currentTimeMillis() - start) / 1000 + "    "
+//                    + conn.getResponseCode() + "    " + msg);
             List<SimpleMessage> list = null;
             if (msg != null && msg.length() > 0) {
                 list = JSON.parseArray(msg, SimpleMessage.class);
             }
             if (list == null || list.size() == 0) {
-                Thread.sleep((long) (Math.random()*500));
+                Thread.sleep((long) (Math.random() * 900));
                 continue;
             }
-            Log.d(TAG,"size is :" + list.size());
+            Log.d(TAG, "size is :" + list.size());
             for (SimpleMessage simpleMessage : list) {
                 date = String.valueOf(new Date().getTime());
                 Log.d(TAG,
@@ -130,7 +128,7 @@ public class MQRecive {
                 conn.setRequestProperty(AK, ak);
                 conn.setRequestProperty(CONSUMERID, cid);
                 conn.connect();
-                Log.d(TAG,"delete msg:" + getMsg(conn));
+                Log.d(TAG, "delete msg:" + getMsg(conn));
             }
             Thread.sleep(500);
         }

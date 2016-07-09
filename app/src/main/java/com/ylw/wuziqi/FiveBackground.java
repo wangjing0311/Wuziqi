@@ -11,6 +11,7 @@ import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
@@ -44,11 +45,13 @@ public class FiveBackground {
     private int width;
     private int height;
     private MaskFilter mEmboss;
+    private float strokeWidth = 5;// 棋盘线宽
+    PointF newPoint, oldPoint;
 
     public FiveBackground(Context context) {
         this.context = context;
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setStrokeWidth(5);
+        paint.setStrokeWidth(strokeWidth);
         paint.setStyle(Paint.Style.STROKE);
         paintImg = new Paint();
         img = Bitmap.createBitmap(canvasW, canvasH, Bitmap.Config.ARGB_8888);
@@ -68,7 +71,8 @@ public class FiveBackground {
                 0.4f, 60, 3.5f);
 
         qPan = new int[hengNum][shuNum];
-
+        newPoint = new PointF(-10, -10);
+        oldPoint = new PointF(-10, -10);
     }
 
     public void setWidthHeight(int width, int height) {
@@ -79,14 +83,24 @@ public class FiveBackground {
     }
 
     public void draw(Canvas canvas) {
-
-        drawBg(canvas);
-
         if (pow(curP.x - downP.x, 2) + pow(curP.y - downP.y, 2) < 20) {
+            bCanvas.save();
+            if (newPoint.x > -1) {
+                float x = offX + gridWidth * newPoint.x - gridWidth / 2;
+                float y = offY + gridWidth * newPoint.y - gridWidth / 2;
+                bCanvas.clipRect(x - strokeWidth, y - strokeWidth, x + gridWidth + strokeWidth, y + gridWidth + strokeWidth);
+                x = offX + gridWidth * oldPoint.x - gridWidth / 2;
+                y = offY + gridWidth * oldPoint.y - gridWidth / 2;
+                bCanvas.clipRect(x - strokeWidth, y - strokeWidth, x + gridWidth + strokeWidth, y + gridWidth + strokeWidth, Region.Op.UNION);
+            }
+            bCanvas.drawColor(0xffffffaa);
             drawLines(bCanvas);
             drawPoint(bCanvas);
+
+            bCanvas.restore();
         }
 
+        canvas.drawColor(0xffffffff);
         canvas.drawBitmap(img, imgP.x, imgP.y, paintImg);
 
         if (isOver) {
@@ -102,14 +116,6 @@ public class FiveBackground {
 
     }
 
-
-    private void drawBg(Canvas canvas) {
-        paint.setColor(0xffffffff);
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        paint.setStrokeWidth(6);
-        canvas.drawRect(0, 0, w, h, paint);
-    }
-
     private void drawPoint(Canvas bCanvas) {
         paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.FILL);
@@ -119,7 +125,7 @@ public class FiveBackground {
         for (int i = 0; i < hengNum; i++) {
             for (int j = 0; j < shuNum; j++) {
                 if (qPan[i][j] == 1) {
-                    paint.setColor(Color.RED);
+                    paint.setColor(0xffee0000);
                     bCanvas.drawPoint(offX + gridWidth * i, offY + gridWidth * j, paint);
                 } else if (qPan[i][j] == 2) {
                     paint.setColor(0xff444444);
@@ -128,7 +134,12 @@ public class FiveBackground {
             }
         }
         paint.setMaskFilter(null);
-
+        paint.setStrokeWidth(3);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setColor(0xff00ff00);
+        float x = offX + gridWidth * newPoint.x - gridWidth / 2;
+        float y = offY + gridWidth * newPoint.y - gridWidth / 2;
+        bCanvas.drawRect(x, y, x + gridWidth, y + gridWidth, paint);
     }
 
     private float gridWidth = 60;
@@ -136,6 +147,7 @@ public class FiveBackground {
 
     private void drawLines(Canvas canvas) {
         paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(strokeWidth);
         paint.setColor(0xff8888ff);
 
         float qpw = (hengNum - 1) * gridWidth;
@@ -184,7 +196,7 @@ public class FiveBackground {
     private boolean wait = true;
 
     private void addPoint() {
-        if (wait) return;
+//todo        if (wait) return;
         if (isOver) {
             restart();
             return;
@@ -207,11 +219,17 @@ public class FiveBackground {
 //        isRed = !isRed;
 
         qPan[numX][numY] = 1;
+        addPoint(numX, numY);
         judgeWin(numX, numY, true);
         wait = true;
         Controller.send(numX, numY);
         Log.d(TAG, String.format("x = %d y = %d", numX, numY));
 
+    }
+
+    private void addPoint(int numX, int numY) {
+        oldPoint.set(newPoint);
+        newPoint.set(numX, numY);
     }
 
     String resultStr = "";
@@ -220,12 +238,11 @@ public class FiveBackground {
         if (isRed) {
             if (check(numX, numY, 1)) {
                 resultStr = "红方胜!";
-
                 gameOver();
             }
         } else {
             if (check(numX, numY, 2)) {
-            resultStr = "黑方胜!";
+                resultStr = "黑方胜!";
                 gameOver();
             }
         }
@@ -235,12 +252,6 @@ public class FiveBackground {
         Toast.makeText(context, resultStr, Toast.LENGTH_LONG).show();
         isOver = true;
         Controller.gameOver();
-        for (int i = 0; i < hengNum; i++) {
-            for (int j = 0; j < shuNum; j++) {
-                qPan[i][j] = 0;
-            }
-        }
-
     }
 
 
@@ -296,25 +307,32 @@ public class FiveBackground {
     }
 
     public void start() {
-        wait = false;
+        restart();
     }
 
     public void step(int x, int y) {
         qPan[x][y] = 2;
+        addPoint(x, y);
         judgeWin(x, y, false);
         isRed = true;
         wait = false;
-
     }
 
     public void restart() {
         wait = false;
         isRed = true;
         isOver = false;
+        reset();
+        newPoint.set(-10, -10);
 
-
-        img = Bitmap.createBitmap(canvasW, canvasH, Bitmap.Config.ARGB_8888);
-        bCanvas = new Canvas(img);
         Controller.draw();
+    }
+
+    private void reset() {
+        for (int i = 0; i < hengNum; i++) {
+            for (int j = 0; j < shuNum; j++) {
+                qPan[i][j] = 0;
+            }
+        }
     }
 }

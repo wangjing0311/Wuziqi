@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        fiveBackground = new FiveBackground(MainActivity.this);
         controller = new Controller(this, fiveBackground);
     }
 
@@ -78,8 +79,6 @@ public class MainActivity extends AppCompatActivity {
         public void surfaceCreated(SurfaceHolder surfaceHolder) {
             int w = surfaceView.getWidth();
             int h = surfaceView.getHeight();
-            fiveBackground = new FiveBackground(MainActivity.this);
-            controller.setView(fiveBackground);
             fiveBackground.setWidthHeight(w, h);
             isDestroy = false;
             draw();
