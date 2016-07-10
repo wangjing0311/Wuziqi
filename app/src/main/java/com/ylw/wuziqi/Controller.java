@@ -44,11 +44,9 @@ public class Controller {
                 return true;
             }
         });
-        recive.start();
         send = new MQSend();
         myId = DeviceUtil.getUniquePsuedoID() + Math.random();
         c = this;
-        connect();
     }
 
     private boolean handleMsg(MessageBody msg) {
@@ -75,9 +73,14 @@ public class Controller {
 
             }
         } else {
+            if (!friendId.equals(msg.getUid())) {
+                return false;
+            }
             switch (msg.getCommandCode()) {
                 case LEAVE:
                     viewMsg("对方离开");
+                    viewMsg("等待连接");
+                    isBegin = false;
                     connect();
                     break;
             }
@@ -134,9 +137,6 @@ public class Controller {
         c.send.send(body.toString());
     }
 
-    public void setView(FiveBackground fiveBackground) {
-        this.fiveBackground = fiveBackground;
-    }
 
     public static void gameOver() {
         c.isBegin = false;
@@ -156,16 +156,22 @@ public class Controller {
         if (withMe) {
             c.isBegin = true;
             fiveBackground.restart();
+            recive.stop();
             leave();
         } else {
             c.isBegin = false;
             fiveBackground.restart();
             fiveBackground.setWait(true);
+            recive.start();
             connect();
         }
     }
 
     public void leave() {
-        c.send(LEAVE);
+        send(LEAVE);
+    }
+
+    public void destroy() {
+        recive.stop();
     }
 }

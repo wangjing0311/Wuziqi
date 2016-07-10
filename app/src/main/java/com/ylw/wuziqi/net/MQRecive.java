@@ -3,6 +3,7 @@ package com.ylw.wuziqi.net;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
+import com.ylw.wuziqi.Controller;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,9 +28,14 @@ public class MQRecive {
     public static String TIME = "time";
 
     Executor executor;
+    private boolean isStop = true;
 
     public MQRecive() {
         executor = TaskUtil.createSerialExecutor();
+    }
+
+    public void stop() {
+        isStop = true;
     }
 
     public interface OnMsgListener {
@@ -45,6 +51,7 @@ public class MQRecive {
     }
 
     public void start() {
+        isStop = false;
         executor.execute(new Runnable() {
 
             @Override
@@ -77,6 +84,7 @@ public class MQRecive {
         Log.d(TAG, NEWLINE + NEWLINE);
 
         while (true) {
+            if (isStop) break;
             String date = String.valueOf(new Date().getTime());
             URL uri = new URL(url + "message/?topic=" + topic + "&time=" + date + "&num=" + 32);
             HttpURLConnection conn = (HttpURLConnection) uri.openConnection();
@@ -89,7 +97,6 @@ public class MQRecive {
             conn.setRequestProperty(SIGNATURE, sign);
             conn.setRequestProperty(AK, ak);
             conn.setRequestProperty(CONSUMERID, cid);
-            long start = System.currentTimeMillis();
             conn.connect();
             String msg = getMsg(conn);
 //            Log.d(TAG, "get cost:" + (System.currentTimeMillis() - start) / 1000 + "    "

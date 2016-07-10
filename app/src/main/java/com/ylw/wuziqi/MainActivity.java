@@ -67,7 +67,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        controller.leave( );
+        controller.leave();
+        controller.destroy();
     }
 
 
