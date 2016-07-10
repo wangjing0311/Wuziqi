@@ -41,8 +41,7 @@ public class MQRecive {
     private OnMsgListener onMsgListener;
 
     public void setOnMsgListener(OnMsgListener onMsgListener) {
-        // TODO Auto-generated method stub
-        this.onMsgListener = onMsgListener;
+         this.onMsgListener = onMsgListener;
     }
 
     public void start() {

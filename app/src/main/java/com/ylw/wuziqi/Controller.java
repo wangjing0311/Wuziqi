@@ -19,13 +19,14 @@ public class Controller {
     private static final int ACCECPT = 1;
 
     public static String myId;
-    private final Context context;
+    private Context context;
     private FiveBackground fiveBackground;
     MQRecive recive;
     MQSend send;
 
     String friendId = "";
     static Controller c;
+    private boolean isBegin = false;
 
     public Controller(Context context, FiveBackground fiveBackground) {
         this.context = context;
@@ -56,7 +57,7 @@ public class Controller {
                 return false;
             }
             draw(msg.getX(), msg.getY());
-        } else {
+        } else if (!isBegin) {
             switch (msg.getCommandCode()) {
                 case WAIT:
                     friendId = msg.getUid();
@@ -102,6 +103,7 @@ public class Controller {
     }
 
     private void beginGame() {
+        isBegin = true;
         fiveBackground.start();
     }
 
@@ -125,10 +127,15 @@ public class Controller {
     }
 
     public static void gameOver() {
-
+        c.isBegin = false;
     }
 
     public void restart() {
+        c.isBegin = true;
         fiveBackground.restart();
+    }
+
+    public static void startAnim() {
+        ((MainActivity) c.context).anim();
     }
 }

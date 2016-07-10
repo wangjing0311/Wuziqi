@@ -43,7 +43,7 @@ public class MQSend {
     }
 
     public void send(final String msg) {
-        if(msg!=null)return;// TODO: 2016/7/10 stop send msg
+//        if(msg!=null)return;// 2016/7/10 stop send msg
         executor.execute(new Runnable() {
             int time = 1000;
 
@@ -68,7 +68,6 @@ public class MQSend {
     }
 
     public void sendM(String msg) throws Exception {
-        // TODO Auto-generated method stub
         body = msg;
         String date = String.valueOf(new Date().getTime());
         URL uri = new URL(url + "message?topic=" + topic + "&time=" + date + "&tag=http" + "&key=http");

@@ -281,6 +281,13 @@ public class FiveBackground {
             case MotionEvent.ACTION_UP:
                 if (!moved) {
                     addPoint(event.getX(), event.getY());
+                } else {
+                    if (imgP.x > 0 || imgP.y > 0
+                            || canvasW * zoom > width && imgP.x + canvasW * zoom < width
+                            || canvasH * zoom > height && imgP.y + canvasH * zoom < height
+                            || canvasW * zoom < width && imgP.x < 0
+                            || canvasH * zoom < height && imgP.y < 0)
+                        Controller.startAnim();
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
@@ -297,7 +304,8 @@ public class FiveBackground {
     private boolean wait = true;
 
     private void addPoint(float x, float y) {
-//todo        if (wait) return;
+        if (animing) return;
+        if (wait) return;
         if (isOver) {
             restart();
             return;
@@ -436,5 +444,38 @@ public class FiveBackground {
                 qPan[i][j] = 0;
             }
         }
+    }
+
+    private boolean animing = false;
+    private PointF oImgP = new PointF();
+
+    public void drawAnim(Canvas canvas, float value) {
+        if (!animing) {
+            oImgP.set(imgP);
+        }
+        animing = true;
+        float x = oImgP.x;
+        float y = oImgP.y;
+        if (oImgP.x > 0 || canvasW * zoom < width && oImgP.x < 0) {
+            x = oImgP.x * (1 - value);
+        }
+        if (canvasW * zoom > width && oImgP.x + canvasW * zoom < width) {
+            x = (width - oImgP.x - canvasW * zoom) * value + oImgP.x;
+        }
+        if (oImgP.y > 0 || canvasH * zoom < height && oImgP.y < 0) {
+            y = oImgP.y * (1 - value);
+        }
+        if (canvasH * zoom > height && oImgP.y + canvasH * zoom < height) {
+            y = (height - oImgP.y - canvasH * zoom) * value + oImgP.y;
+        }
+        imgP.set(x, y);
+        canvas.drawColor(0xffffffff);
+        matrix.setScale(zoom, zoom);
+        matrix.postTranslate(x, y);
+        canvas.drawBitmap(img, matrix, paintImg);
+    }
+
+    public void animEnd() {
+        animing = false;
     }
 }
