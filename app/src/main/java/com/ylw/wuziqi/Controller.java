@@ -17,6 +17,7 @@ public class Controller {
 
     private static final int WAIT = 0;
     private static final int ACCECPT = 1;
+    private static final int LEAVE = 2;
 
     public static String myId;
     private Context context;
@@ -25,8 +26,9 @@ public class Controller {
     MQSend send;
 
     String friendId = "";
-    static Controller c;
+    public static Controller c;
     private boolean isBegin = false;
+    public boolean withMe = true;
 
     public Controller(Context context, FiveBackground fiveBackground) {
         this.context = context;
@@ -44,12 +46,13 @@ public class Controller {
         });
         recive.start();
         send = new MQSend();
-        myId = DeviceUtil.getUniquePsuedoID();
+        myId = DeviceUtil.getUniquePsuedoID() + Math.random();
         c = this;
         connect();
     }
 
     private boolean handleMsg(MessageBody msg) {
+        if (withMe) return false;
         if (msg.isMe())
             return false;
         if (msg.isStep()) {
@@ -62,17 +65,26 @@ public class Controller {
                 case WAIT:
                     friendId = msg.getUid();
                     send(ACCECPT);
-                    viewMsg("收到 friendId ： " + friendId);
+                    viewMsg("开始连接");
                     break;
                 case ACCECPT:
                     friendId = msg.getUid();
                     beginGame();
-                    viewMsg("收到 ACCECPT ： 开始游戏");
+                    viewMsg("开始游戏");
+                    break;
+
+            }
+        } else {
+            switch (msg.getCommandCode()) {
+                case LEAVE:
+                    viewMsg("对方离开");
+                    connect();
                     break;
             }
         }
         return true;
     }
+
 
     private void draw(final int x, final int y) {
         TaskUtil.postMainTask(new Runnable() {
@@ -137,5 +149,23 @@ public class Controller {
 
     public static void startAnim() {
         ((MainActivity) c.context).anim();
+    }
+
+    public void withMe(boolean b) {
+        withMe = b;
+        if (withMe) {
+            c.isBegin = true;
+            fiveBackground.restart();
+            leave();
+        } else {
+            c.isBegin = false;
+            fiveBackground.restart();
+            fiveBackground.setWait(true);
+            connect();
+        }
+    }
+
+    public void leave() {
+        c.send(LEAVE);
     }
 }

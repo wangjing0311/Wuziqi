@@ -41,7 +41,7 @@ public class MQRecive {
     private OnMsgListener onMsgListener;
 
     public void setOnMsgListener(OnMsgListener onMsgListener) {
-         this.onMsgListener = onMsgListener;
+        this.onMsgListener = onMsgListener;
     }
 
     public void start() {
@@ -108,13 +108,15 @@ public class MQRecive {
                 Log.d(TAG,
                         "receive msg:" + simpleMessage.getBody() + "   born time " + simpleMessage.getBornTime());
 
-                boolean isConsumer = true;
-                if (onMsgListener != null) {
-                    isConsumer = onMsgListener.onMsg(simpleMessage.getBody());
-                }
+                if (System.currentTimeMillis() - Long.valueOf(simpleMessage.getBornTime()) < 5 * 60 * 1000) {
+                    boolean isConsumer = true;
+                    if (onMsgListener != null) {
+                        isConsumer = onMsgListener.onMsg(simpleMessage.getBody());
+                    }
 
-                if (!isConsumer)
-                    continue;
+                    if (!isConsumer)
+                        continue;
+                }
 
                 uri = new URL(url + "message/?msgHandle=" + simpleMessage.getMsgHandle() + "&topic=" + topic + "&time="
                         + date);

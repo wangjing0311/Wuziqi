@@ -9,12 +9,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.Toast;
 
@@ -67,6 +67,38 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        controller.leave( );
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(Menu.NONE, Menu.FIRST + 1, 1, "自己玩");
+        menu.add(Menu.NONE, Menu.FIRST + 2, 2, "找人玩");
+        mt[0] = menu.findItem(Menu.FIRST + 1).setCheckable(true).setChecked(true);
+        mt[1] = menu.findItem(Menu.FIRST + 2).setCheckable(true).setChecked(false);
+        return true;
+    }
+
+    MenuItem[] mt = new MenuItem[2];
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case Menu.FIRST + 1:
+                mt[0].setChecked(true);
+                mt[1].setChecked(false);
+                controller.withMe(true);
+                break;
+            case Menu.FIRST + 2:
+                mt[0].setChecked(false);
+                mt[1].setChecked(true);
+                controller.withMe(false);
+                break;
+        }
+
+        return false;
+
     }
 
     public boolean draw() {

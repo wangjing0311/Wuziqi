@@ -305,7 +305,7 @@ public class FiveBackground {
 
     private void addPoint(float x, float y) {
         if (animing) return;
-        if (wait) return;
+        if (!Controller.c.withMe && wait) return;
         if (isOver) {
             restart();
             return;
@@ -320,19 +320,21 @@ public class FiveBackground {
 
         if (qPan[numX][numY] != 0) return;
 
-//        if (isRed) {
-//            qPan[numX][numY] = 1;
-//        } else {
-//            qPan[numX][numY] = 2;
-//        }
-//        judgeWin(numX, numY, isRed);
-//        isRed = !isRed;
-
-        qPan[numX][numY] = 1;
+        if (Controller.c.withMe) {
+            if (isRed) {
+                qPan[numX][numY] = 1;
+            } else {
+                qPan[numX][numY] = 2;
+            }
+            judgeWin(numX, numY, isRed);
+            isRed = !isRed;
+        } else {
+            qPan[numX][numY] = 1;
+            wait = true;
+            Controller.send(numX, numY);
+        }
         addPoint(numX, numY);
         judgeWin(numX, numY, true);
-        wait = true;
-        Controller.send(numX, numY);
         Log.d(TAG, String.format("x = %d y = %d", numX, numY));
 
     }
@@ -436,6 +438,10 @@ public class FiveBackground {
         newPoint.set(-10, -10);
 
         Controller.draw();
+    }
+
+    public void setWait(boolean wait) {
+        this.wait = wait;
     }
 
     private void reset() {
