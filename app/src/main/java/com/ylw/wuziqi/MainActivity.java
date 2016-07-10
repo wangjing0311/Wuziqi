@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     Controller controller;
+    MotionEventTest motionEventTest  =new MotionEventTest();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (isDestroy) return false;
                 fiveBackground.onTouch(motionEvent);
+                motionEventTest.onTouch(motionEvent);
                 return !draw();
             }
         });

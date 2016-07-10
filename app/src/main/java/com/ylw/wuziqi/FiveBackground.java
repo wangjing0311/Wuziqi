@@ -9,8 +9,6 @@ import android.graphics.MaskFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.util.Log;
@@ -91,7 +89,7 @@ public class FiveBackground {
     }
 
     public void draw(Canvas canvas) {
-        if (pow(curP.x - downP.x, 2) + pow(curP.y - downP.y, 2) < 20) {
+        if (!moved) {
             bCanvas.save();
             // 计算重绘区域
             if (newPoint.x > -1) {
@@ -179,78 +177,114 @@ public class FiveBackground {
         }
     }
 
-    PointF curP = new PointF();
-    PointF downP = new PointF();
     PointF imgP = new PointF();
+    PointF downImgP = new PointF();
     PointF offsetP = new PointF();
+    PointF dOffsetP = new PointF();
 
+    PointF downP = new PointF();
     PointF downP2 = new PointF();
-    PointF offsetP2 = new PointF();
-    PointF curP2 = new PointF();
-
-    PointF zoomP = new PointF();
 
     float downTwoPointLength = 0;
-
+    float oZoom = 1;
     boolean moved = false;
 
+    int index1 = 0;
+    int index2 = 0;
+
+    float[][] p = new float[15][2];
+
     public void onTouch(MotionEvent event) {
-        int pointCount = event.getPointerCount();
-        Log.d(TAG, "Action : " + castAction(event.getActionMasked()));
-        if (pointCount == 1) {
-            curP.set(event.getX(0), event.getY(0));
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    downP.set(event.getX(), event.getY());
-                    offsetP.set(downP.x - imgP.x, downP.y - imgP.y);
-                    moved = false;
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    imgP.set(curP.x - offsetP.x, curP.y - offsetP.y);
-                    if (pow(curP.x - downP.x, 2) + pow(curP.y - downP.y, 2) > 20) {
-                        moved = true;
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    if (!moved) {
-                        addPoint();
-                    }
-                    break;
-                case MotionEvent.ACTION_CANCEL:
-                    break;
-            }
-        } else {
-            curP.set(event.getX(0), event.getY(0));
-            curP2.set(event.getX(1), event.getY(1));
-            switch (event.getActionMasked()) {
-                case MotionEvent.ACTION_DOWN:
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    downP.set(curP);
-                    downP2.set(curP2);
-                    downTwoPointLength = (float) sqrt(pow(downP.x - downP2.x, 2) + pow(downP.y - downP2.y, 2)) / zoom;
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    float nowTwoPointLength = (float) sqrt(pow(curP.x - curP2.x, 2) + pow(curP.y - curP2.y, 2));
+
+        int index = event.getActionIndex();
+        p[index][0] = event.getX(index);
+        p[index][1] = event.getY(index);
+
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                index1 = index;
+                index2 = index;
+                downP.set(p[index1][0], p[index1][1]);
+                downP2.set(p[index2][0], p[index2][1]);
+                downImgP.set(imgP);
+
+                offsetP.set((downP.x + downP2.x) / 2 - imgP.x, (downP.y + downP2.y) / 2 - imgP.y);
+                dOffsetP.set(offsetP);
+                oZoom = zoom;
+                moved = false;
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                index1 = index2;
+                index2 = index;
+                downP.set(p[index1][0], p[index1][1]);
+                downP2.set(p[index2][0], p[index2][1]);
+                downImgP.set(imgP);
+                oZoom = zoom;
+                moved = true;
+
+                offsetP.set((downP.x + downP2.x) / 2 - imgP.x, (downP.y + downP2.y) / 2 - imgP.y);
+                dOffsetP.set(offsetP);
+                downTwoPointLength = (float) sqrt(pow(downP.x - downP2.x, 2) + pow(downP.y - downP2.y, 2)) / zoom;
+
+                break;
+            case MotionEvent.ACTION_MOVE:
+                p[index1][0] = event.getX(index1);
+                p[index1][1] = event.getY(index1);
+                p[index2][0] = event.getX(index2);
+                p[index2][1] = event.getY(index2);
+
+                float nowTwoPointLength = (float) sqrt(pow(p[index1][0] - p[index2][0], 2) + pow(p[index1][1] - p[index2][1], 2));
+                if (nowTwoPointLength != 0 && downTwoPointLength != 0) {
                     zoom = nowTwoPointLength / downTwoPointLength;
-                    float zpx = (zoom - 1) * abs(curP.x - curP2.x) / 2;
-                    float zpy = (zoom - 1) * abs(curP.y - curP2.y) / 2;
-                    zoomP.set(zpx, zpy);
-//                    imgP.set(curP.x - zpx, curP.y - zpy);
-//                    Log.d(TAG, "zoom : " + zoom + " dl:" + downTwoPointLength + " nl:" + nowTwoPointLength);
-                    if (pow(curP.x - downP.x, 2) + pow(curP.y - downP.y, 2) > 20
-                            || pow(curP2.x - downP2.x, 2) + pow(curP2.y - downP2.y, 2) > 20) {
-                        moved = true;
+                    offsetP.set(dOffsetP.x * zoom / oZoom, dOffsetP.y * zoom / oZoom);
+                }
+                imgP.set((p[index1][0] + p[index2][0]) / 2 - offsetP.x, (p[index1][1] + p[index2][1]) / 2 - offsetP.y);
+
+                if (pow(p[index1][0] - downP.x, 2) + pow(p[index1][1] - downP.y, 2) > 20
+                        || pow(p[index2][0] - downP2.x, 2) + pow(p[index2][1] - downP2.y, 2) > 20) {
+                    moved = true;
+                }
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                int count = event.getPointerCount();
+                boolean change = false;
+                for (int i = 0; i < count; i++) {
+                    if (count == 2) {
+                        if (i != index) {
+                            index1 = i;
+                            index2 = i;
+                            change = true;
+                            break;
+                        }
+                    } else if (index1 == index) {
+                        if (i != index && i != index2) {
+                            index1 = i;
+                            change = true;
+                            break;
+                        }
+                    } else if (index2 == index) {
+                        if (i != index && i != index1) {
+                            index2 = i;
+                            change = true;
+                            break;
+                        }
                     }
-                    break;
-                case MotionEvent.ACTION_POINTER_UP:
-                    curP.set(event.getX(0), event.getY(0));
-                    downP.set(event.getX(), event.getY());
-                    offsetP.set(downP.x - imgP.x, downP.y - imgP.y);
-                    break;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    break;
-            }
+                }
+                if (change) {
+                    downP.set(p[index1][0], p[index1][1]);
+                    downP2.set(p[index2][0], p[index2][1]);
+                    offsetP.set((downP.x + downP2.x) / 2 - imgP.x, (downP.y + downP2.y) / 2 - imgP.y);
+                }
+                if (index1 > index) index1--;
+                if (index2 > index) index2--;
+                break;
+            case MotionEvent.ACTION_UP:
+                if (!moved) {
+                    addPoint(event.getX(), event.getY());
+                }
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                break;
         }
 
         //x y坐标同时缩放
@@ -262,14 +296,14 @@ public class FiveBackground {
 
     private boolean wait = true;
 
-    private void addPoint() {
+    private void addPoint(float x, float y) {
 //todo        if (wait) return;
         if (isOver) {
             restart();
             return;
         }
-        float upX = curP.x - offX * zoom - imgP.x;
-        float upY = curP.y - offY * zoom - imgP.y;
+        float upX = x - offX * zoom - imgP.x;
+        float upY = y - offY * zoom - imgP.y;
         float gzw = gridWidth * zoom;
         int numX = Math.round(upX / gzw);
         int numY = Math.round(upY / gzw);
