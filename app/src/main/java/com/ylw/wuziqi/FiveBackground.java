@@ -15,9 +15,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
-import static com.ylw.wuziqi.DrawUtil.castAction;
 import static com.ylw.wuziqi.DrawUtil.getCenterTextBaseLine;
-import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
@@ -428,6 +426,7 @@ public class FiveBackground {
         judgeWin(x, y, false);
         isRed = true;
         wait = false;
+        moved = false;
     }
 
     public void restart() {
