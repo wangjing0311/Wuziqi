@@ -361,6 +361,7 @@ public class FiveBackground {
     private void gameOver() {
         Toast.makeText(context, resultStr, Toast.LENGTH_LONG).show();
         isOver = true;
+        wait = false;
         Controller.gameOver();
     }
 
