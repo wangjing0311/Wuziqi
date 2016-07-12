@@ -83,7 +83,8 @@ public class FiveBackground {
         this.width = width;
         this.height = height;
         rectText.set(0, 210, width, height / 3);
-
+        zoom = width * 1f / canvasW * 2;
+        Controller.draw();
     }
 
     public void draw(Canvas canvas) {
@@ -106,7 +107,10 @@ public class FiveBackground {
         }
 
         canvas.drawColor(0xffffffff);
-//        canvas.drawBitmap(img, imgP.x, imgP.y, paintImg);
+
+        //x y坐标同时缩放
+        matrix.setScale(zoom, zoom);
+        matrix.postTranslate(imgP.x, imgP.y);
 
         canvas.drawBitmap(img, matrix, paintImg);
 
@@ -292,10 +296,6 @@ public class FiveBackground {
                 break;
         }
 
-        //x y坐标同时缩放
-        matrix.setScale(zoom, zoom);
-
-        matrix.postTranslate(imgP.x, imgP.y);
     }
 
 

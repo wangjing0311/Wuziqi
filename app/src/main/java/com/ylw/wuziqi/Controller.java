@@ -9,9 +9,7 @@ import com.ylw.wuziqi.net.MessageBody;
 import com.ylw.wuziqi.net.TaskUtil;
 
 /**
- * author ylw
- * Created on 2016/7/9.
- * description : Wuziqi
+ * author ylw Created on 2016/7/9. description : Wuziqi
  */
 public class Controller {
 
@@ -106,6 +104,15 @@ public class Controller {
                 ((MainActivity) c.context).draw();
             }
         });
+    }
+
+    public static void drawDealy(int mills) {
+        TaskUtil.postMainTaskDelay(new Runnable() {
+            @Override
+            public void run() {
+                ((MainActivity) c.context).draw();
+            }
+        }, mills);
     }
 
     private void viewMsg(final String msg) {

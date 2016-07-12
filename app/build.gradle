@@ -5,7 +5,7 @@ android {
     buildToolsVersion "24.0.0"
     defaultConfig {
         applicationId "com.ylw.wuziqi"
-        minSdkVersion 22
+        minSdkVersion 11
         targetSdkVersion 23
         versionCode 2
         versionName "1.1"
