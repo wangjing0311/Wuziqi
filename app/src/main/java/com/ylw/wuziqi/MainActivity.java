@@ -3,10 +3,12 @@ package com.ylw.wuziqi;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -71,6 +73,16 @@ public class MainActivity extends AppCompatActivity {
         controller.destroy();
     }
 
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this).setTitle("提示").setMessage("退出五子棋？")
+                .setPositiveButton("退出", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MainActivity.super.onBackPressed();
+                    }
+                }).setNegativeButton("取消", null).show();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

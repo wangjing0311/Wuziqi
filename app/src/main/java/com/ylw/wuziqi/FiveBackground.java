@@ -83,7 +83,10 @@ public class FiveBackground {
         this.width = width;
         this.height = height;
         rectText.set(0, 210, width, height / 3);
-        zoom = width * 1f / canvasW * 2;
+        if (oZoom == 1) {
+            zoom = width * 0.9f / canvasW;
+        }
+        imgP.set((width - canvasW * zoom) / 2, (height - canvasH * zoom) / 2);
         Controller.draw();
     }
 
@@ -284,12 +287,30 @@ public class FiveBackground {
                 if (!moved) {
                     addPoint(event.getX(), event.getY());
                 } else {
-                    if (imgP.x > 0 || imgP.y > 0
-                            || canvasW * zoom > width && imgP.x + canvasW * zoom < width
-                            || canvasH * zoom > height && imgP.y + canvasH * zoom < height
-                            || canvasW * zoom < width && imgP.x < 0
-                            || canvasH * zoom < height && imgP.y < 0)
+                    if (!animing) {
+                        oImgP.set(imgP);
+                    }
+                    boolean s0 = canvasW * zoom <= width;
+                    boolean s1 = canvasH * zoom <= height;
+                    boolean s2 = oImgP.x > 0;
+                    boolean s3 = oImgP.y > 0;
+                    boolean s4 = oImgP.x + canvasW * zoom < width;
+                    boolean s5 = oImgP.y + canvasH * zoom < height;
+                    boolean s6 = oImgP.x != (width - canvasW * zoom) / 2;
+                    boolean s7 = oImgP.y != (height - canvasH * zoom) / 2;
+                    if (s0 && s6) {
                         Controller.startAnim();
+                    } else if (s2) {
+                        Controller.startAnim();
+                    } else if (s4) {
+                        Controller.startAnim();
+                    } else if (s1 && s7) {
+                        Controller.startAnim();
+                    } else if (s3) {
+                        Controller.startAnim();
+                    } else if (s5) {
+                        Controller.startAnim();
+                    }
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
@@ -462,18 +483,32 @@ public class FiveBackground {
         animing = true;
         float x = oImgP.x;
         float y = oImgP.y;
-        if (oImgP.x > 0 || canvasW * zoom < width && oImgP.x < 0) {
-            x = oImgP.x * (1 - value);
+
+        boolean s0 = canvasW * zoom <= width;
+        boolean s1 = canvasH * zoom <= height;
+        boolean s2 = oImgP.x > 0;
+        boolean s3 = oImgP.y > 0;
+        boolean s4 = oImgP.x + canvasW * zoom < width;
+        boolean s5 = oImgP.y + canvasH * zoom < height;
+
+        boolean s6 = oImgP.x != (width - canvasW * zoom) / 2;
+        boolean s7 = oImgP.y != (height - canvasH * zoom) / 2;
+
+        if (s0 && s6) {
+            x = oImgP.x + ((width - canvasW * zoom) / 2 - oImgP.x) * value;
+        } else if (s2) {
+            x = oImgP.x + (-oImgP.x) * value;
+        } else if (s4) {
+            x = oImgP.x + (width - oImgP.x - canvasW * zoom) * value;
         }
-        if (canvasW * zoom > width && oImgP.x + canvasW * zoom < width) {
-            x = (width - oImgP.x - canvasW * zoom) * value + oImgP.x;
+        if (s1 && s7) {
+            y = oImgP.y + ((height - canvasH * zoom) / 2 - oImgP.y) * value;
+        } else if (s3) {
+            y = oImgP.y + (-oImgP.y) * value;
+        } else if (s5) {
+            y = oImgP.y + (height - oImgP.y - canvasH * zoom) * value;
         }
-        if (oImgP.y > 0 || canvasH * zoom < height && oImgP.y < 0) {
-            y = oImgP.y * (1 - value);
-        }
-        if (canvasH * zoom > height && oImgP.y + canvasH * zoom < height) {
-            y = (height - oImgP.y - canvasH * zoom) * value + oImgP.y;
-        }
+
         imgP.set(x, y);
         canvas.drawColor(0xffffffff);
         matrix.setScale(zoom, zoom);
