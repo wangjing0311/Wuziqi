@@ -29,10 +29,11 @@ public class FiveBackground {
     private Canvas bCanvas;
     private final Context context;
     private Paint paint;
-    private float w, h;
     private Paint paintImg;
-    private final int hengNum = 30, shuNum = 30;
-    private final int canvasW = 1900, canvasH = 1900;
+    private float gridWidth;
+    private final int hengNum = 19, shuNum = 19;
+    private final int canvasW = 890, canvasH = 890;
+    private float strokeWidth = 5;// 棋盘线宽
 
     boolean isRed = true;
     private float offX;
@@ -45,7 +46,6 @@ public class FiveBackground {
     private int width;
     private int height;
     private MaskFilter mEmboss;
-    private float strokeWidth = 5;// 棋盘线宽
     PointF newPoint, oldPoint;
     private float zoom = 1;
     private final Matrix matrix;
@@ -58,8 +58,6 @@ public class FiveBackground {
         paintImg = new Paint();
         img = Bitmap.createBitmap(canvasW, canvasH, Bitmap.Config.ARGB_8888);
         bCanvas = new Canvas(img);
-        this.w = canvasW;
-        this.h = canvasH;
 
         paintText = new Paint(Paint.ANTI_ALIAS_FLAG);
 
@@ -72,6 +70,7 @@ public class FiveBackground {
         mEmboss = new EmbossMaskFilter(new float[]{1, 1, 1},
                 0.4f, 60, 3.5f);
 
+        gridWidth = canvasW / hengNum;
         qPan = new int[hengNum][shuNum];
         newPoint = new PointF(-10, -10);
         oldPoint = new PointF(-10, -10);
@@ -91,6 +90,7 @@ public class FiveBackground {
     }
 
     public void draw(Canvas canvas) {
+        long time = System.currentTimeMillis();
         if (!moved) {
             bCanvas.save();
             // 计算重绘区域
@@ -128,12 +128,14 @@ public class FiveBackground {
             canvas.drawText(resultStr, width / 2, baseLine + 150, paintText);
         }
 
+        time = System.currentTimeMillis() - time;
+        Log.d(TAG, "draw: time : " + time);
     }
 
     private void drawPoint(Canvas bCanvas) {
         paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.FILL);
-        paint.setStrokeWidth(60);
+        paint.setStrokeWidth(gridWidth);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setMaskFilter(mEmboss);
         for (int i = 0; i < hengNum; i++) {
@@ -155,8 +157,6 @@ public class FiveBackground {
         float y = offY + gridWidth * newPoint.y - gridWidth / 2;
         bCanvas.drawRect(x, y, x + gridWidth, y + gridWidth, paint);
     }
-
-    private float gridWidth = 60;
 
 
     private void drawLines(Canvas canvas) {

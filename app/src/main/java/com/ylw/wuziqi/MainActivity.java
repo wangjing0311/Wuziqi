@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
     public void anim() {
         if (anim == null) {
             anim = ValueAnimator.ofFloat(0f, 1f);
-            anim.setDuration(600);
+            anim.setDuration(1000);
 //            anim.setInterpolator(new OvershootInterpolator());
             anim.setInterpolator(new BounceInterpolator());
             anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
